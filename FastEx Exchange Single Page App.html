@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastEx - Instant Digital Currency Exchange</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        emeraldGlow: '#10b981',
+                        cyanGlow: '#06b6d4',
+                        amberGlow: '#f59e0b',
+                        darkbg: '#030712',
+                        cardbg: 'rgba(17, 24, 39, 0.75)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Hind Siliguri', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Inter & Hind Siliguri -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background-color: #030712;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 20%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glow-box-indigo {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
+        }
+        .glow-box-emerald {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white relative overflow-x-hidden">
+
+    <!-- Toast Notification Overlay -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <!-- Broadcast Announcement Banner -->
+    <div id="broadcastBanner" class="bg-gradient-to-r from-indigo-900/90 via-purple-900/90 to-slate-900/90 backdrop-blur-md border-b border-indigo-500/20 text-white py-2 px-4 text-center text-xs font-medium flex items-center justify-between shadow-lg">
+        <div class="flex items-center justify-center space-x-2 mx-auto">
+            <span class="flex h-2 w-2 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span id="broadcastText" class="tracking-wide">📢 স্বাগতম FastEx এক্সচেঞ্জ প্ল্যাটফর্মে! নিরাপদে ও দ্রুততম সময়ে ফ্রিল্যান্স USD এবং ক্রিপ্টো ক্যাশআউট করুন।</span>
+        </div>
+        <button onclick="dismissBroadcast()" class="text-slate-400 hover:text-white transition px-2"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo (Secret Admin Trigger Integrated) -->
+                <div class="flex items-center space-x-3 cursor-pointer select-none group" id="secretLogoTrigger" title="FastEx Exchange">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-brand-500/20 group-hover:scale-105 transition duration-300">
+                        <div class="w-full h-full bg-slate-950 rounded-[15px] flex items-center justify-center">
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-300 font-black text-xl">⚡</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-300">FastEx</span>
+                            <span class="px-1.5 py-0.5 text-[9px] font-extrabold bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-md">PRO</span>
+                        </div>
+                        <span class="text-[10px] block text-slate-400 font-medium tracking-wider uppercase">Instant Currency Exchange</span>
+                    </div>
+                </div>
+
+                <!-- Public Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-1 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800/60">
+                    <button onclick="switchView('user')" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-brand-600/90 shadow-md shadow-brand-500/20 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-arrow-right-arrow-left text-xs"></i>
+                        <span>এক্সচেঞ্জ করুন</span>
+                    </button>
+                    <button onclick="openModal('ratesModal')" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-line text-cyan-400"></i>
+                        <span>লাইভ রেট</span>
+                    </button>
+                    <button onclick="openModal('historyModal')" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
+                        <span>অর্ডারের ইতিহাস</span>
+                    </button>
+                    <button onclick="openModal('supportModal')" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-headset text-emerald-400"></i>
+                        <span>হেল্প ডেক্স</span>
+                    </button>
+                </nav>
+
+                <!-- Admin Mode Exit Button (Only Visible inside Secret Admin Mode) -->
+                <div class="flex items-center space-x-3">
+                    <button id="adminExitBtn" onclick="switchView('user')" class="hidden px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center space-x-2 transition shadow-lg shadow-rose-500/5">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>ইউজার মোডে ফেরত যান</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Live Rates Ticker Bar -->
+    <div class="bg-slate-950/90 border-b border-slate-900 py-2.5 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 flex items-center text-xs space-x-8 overflow-x-auto whitespace-nowrap text-slate-400 no-scrollbar" id="tickerContainer">
+            <!-- Dynamic Rates Populated via JS -->
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full relative z-10">
+
+        <!-- ================= USER EXCHANGE HUB VIEW ================= -->
+        <div id="userView" class="space-y-10">
+            <!-- Hero Header -->
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>অটোমেটেড দ্রুততম পেমেন্ট সিস্টেম</span>
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                    স্মার্ট ও নিরাপদ <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-cyan-300 to-emerald-400">ডলার ও ক্রিপ্টো</span> ক্যাশআউট
+                </h1>
+                <p class="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+                    PayPal, Upwork, Fiverr এবং Binance USDT খুব সহজেই বিকাশ, নগদ, রকেট বা ব্যাংক অ্যাকাউন্টে ইনস্ট্যান্ট কনভার্ট করুন।
+                </p>
+            </div>
+
+            <!-- Main Exchange Card Wizard -->
+            <div class="max-w-xl mx-auto">
+                <div class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden border border-slate-800/80">
+                    
+                    <!-- Progress Step Indicator -->
+                    <div class="flex items-center justify-between mb-8 pb-5 border-b border-slate-800/80 text-xs font-semibold">
+                        <div class="flex items-center space-x-2 text-brand-400" id="stepInd1">
+                            <span class="w-7 h-7 rounded-xl bg-brand-500/20 flex items-center justify-center border border-brand-500/50 font-bold">1</span>
+                            <span>রেট ও পরিমাণ</span>
+                        </div>
+                        <div class="h-0.5 flex-1 mx-3 bg-slate-800/80 rounded" id="stepLine1"></div>
+                        <div class="flex items-center space-x-2 text-slate-500" id="stepInd2">
+                            <span class="w-7 h-7 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800 font-bold">2</span>
+                            <span>পেমেন্ট তথ্য</span>
+                        </div>
+                        <div class="h-0.5 flex-1 mx-3 bg-slate-800/80" id="stepLine2"></div>
+                        <div class="flex items-center space-x-2 text-slate-500" id="stepInd3">
+                            <span class="w-7 h-7 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800 font-bold">3</span>
+                            <span>কনফার্মেশন</span>
+                        </div>
+                    </div>
+
+                    <!-- STEP 1: CALCULATOR & PAIR SELECTION -->
+                    <div id="wizardStep1" class="space-y-6">
+                        
+                        <!-- Service Type Tabs -->
+                        <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-950/80 rounded-2xl border border-slate-800/80">
+                            <button onclick="setServiceCategory('freelance')" id="catBtnFreelance" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-500/20">
+                                <i class="fa-solid fa-briefcase"></i>
+                                <span>ফ্রিল্যান্স USD (InSave)</span>
+                            </button>
+                            <button onclick="setServiceCategory('crypto')" id="catBtnCrypto" class="py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white">
+                                <i class="fa-brands fa-bitcoin"></i>
+                                <span>Binance USDT</span>
+                            </button>
+                        </div>
+
+                        <!-- Currency Pair Dropdown -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">এক্সচেঞ্জ পেয়ার বা সার্ভিস সিলেক্ট করুন</label>
+                            <div class="relative">
+                                <select id="pairSelect" onchange="onPairChange()" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm font-bold text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition appearance-none cursor-pointer">
+                                    <!-- Dynamic Options Populated via JS -->
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-400 text-xs pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <!-- Disabled Pair Alert -->
+                        <div id="pairDisabledNotice" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs text-amber-300 leading-relaxed flex items-start space-x-2">
+                            <i class="fa-solid fa-triangle-exclamation text-base mt-0.5"></i>
+                            <span id="disabledNoticeText">এই সার্ভিসটি বর্তমানে সাময়িকভাবে বন্ধ রাখা হয়েছে।</span>
+                        </div>
+
+                        <!-- Input Amount & Calculation Box -->
+                        <div class="space-y-4">
+                            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 focus-within:border-brand-500/80 transition">
+                                <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
+                                    <span>আপনি পাঠাবেন (<span id="sendCurrLabel" class="text-white font-bold">USD</span>)</span>
+                                    <span>লিমিট: <span id="limitLabel" class="text-emerald-400 font-bold">$2.0 - $1000.0</span></span>
+                                </div>
+                                <div class="flex items-center justify-between space-x-3">
+                                    <input type="number" id="sendAmount" oninput="calculateExchange()" placeholder="0.00" step="any" class="w-full bg-transparent text-2xl font-black text-white focus:outline-none placeholder-slate-600">
+                                    <span id="sendCurrBadge" class="font-bold text-xs text-brand-300 bg-brand-500/10 border border-brand-500/20 px-3 py-1.5 rounded-xl">USD</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-center -my-2 relative z-10">
+                                <div class="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700/80 flex items-center justify-center text-brand-400 shadow-xl">
+                                    <i class="fa-solid fa-arrow-down text-sm"></i>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+                                <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
+                                    <span>আপনি পাবেন আনুমানিক</span>
+                                    <span>রেট: <span id="rateLabel" class="text-cyan-300 font-bold">1 USD = 114.0 BDT</span></span>
+                                </div>
+                                <div class="flex items-center justify-between space-x-3">
+                                    <input type="text" id="recvAmount" readonly placeholder="0.00" class="w-full bg-transparent text-2xl font-black text-emerald-400 focus:outline-none">
+                                    <span id="recvCurrBadge" class="font-bold text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">BDT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Validation Message -->
+                        <div id="calcErrorMsg" class="hidden text-xs text-rose-400 bg-rose-500/10 p-3.5 rounded-xl border border-rose-500/20 font-medium"></div>
+
+                        <!-- Action Button -->
+                        <button onclick="goToStep2()" id="btnStep1Next" class="w-full py-4 bg-gradient-to-r from-brand-600 via-indigo-600 to-cyan-500 hover:opacity-95 text-white font-extrabold rounded-2xl shadow-xl shadow-brand-500/25 transition transform active:scale-[0.99] flex items-center justify-center space-x-2 text-sm tracking-wide">
+                            <span>পরবর্তী ধাপ (পেমেন্ট ডিটেইলস)</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- STEP 2: PAYOUT METHOD & ACCOUNT -->
+                    <div id="wizardStep2" class="hidden space-y-6">
+                        <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800/80 text-xs space-y-2">
+                            <div class="flex justify-between text-slate-400">
+                                <span>সার্ভিস:</span>
+                                <span id="summaryService" class="font-bold text-white">PayPal USD ➔ BDT Cash</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400">
+                                <span>মোট হিসাব:</span>
+                                <span class="font-bold text-emerald-400"><span id="summarySend">50 USD</span> ➔ <span id="summaryRecv">5700 BDT</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Payout Method Selection -->
+                        <div id="bdtPayoutGroup" class="space-y-3">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">টাকা গ্রহণ করার পেমেন্ট মেথড বেছে নিন</label>
+                            <div class="grid grid-cols-2 gap-3" id="payoutMethodGrid">
+                                <button onclick="selectPayoutMethod('bkash')" id="payoutBtn_bkash" class="payout-opt p-3.5 bg-slate-900/80 border border-slate-700/80 hover:border-brand-500 rounded-2xl text-left flex items-center space-x-3 transition">
+                                    <div class="w-3 h-3 rounded-full border border-slate-500 indicator"></div>
+                                    <span class="text-xs font-bold text-white">বিকাশ (bKash)</span>
+                                </button>
+                                <button onclick="selectPayoutMethod('nagad')" id="payoutBtn_nagad" class="payout-opt p-3.5 bg-slate-900/80 border border-slate-700/80 hover:border-brand-500 rounded-2xl text-left flex items-center space-x-3 transition">
+                                    <div class="w-3 h-3 rounded-full border border-slate-500 indicator"></div>
+                                    <span class="text-xs font-bold text-white">নগদ (Nagad)</span>
+                                </button>
+                                <button onclick="selectPayoutMethod('rocket')" id="payoutBtn_rocket" class="payout-opt p-3.5 bg-slate-900/80 border border-slate-700/80 hover:border-brand-500 rounded-2xl text-left flex items-center space-x-3 transition">
+                                    <div class="w-3 h-3 rounded-full border border-slate-500 indicator"></div>
+                                    <span class="text-xs font-bold text-white">রকেট (Rocket)</span>
+                                </button>
+                                <button onclick="selectPayoutMethod('bank')" id="payoutBtn_bank" class="payout-opt p-3.5 bg-slate-900/80 border border-slate-700/80 hover:border-brand-500 rounded-2xl text-left flex items-center space-x-3 transition">
+                                    <div class="w-3 h-3 rounded-full border border-slate-500 indicator"></div>
+                                    <span class="text-xs font-bold text-white">ব্যাংক ট্রান্সফার</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Payout Account Input -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" id="payoutAccountLabel">আপনার বিকাশ/নগদ/একাউন্ট নম্বর লিখুন</label>
+                            <input type="text" id="payoutAccountInput" placeholder="যেমন: 017XXXXXXXX (Personal)" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm font-semibold text-white focus:outline-none focus:border-brand-500 transition">
+                        </div>
+
+                        <!-- Step 2 Buttons -->
+                        <div class="flex space-x-3">
+                            <button onclick="goToStep1()" class="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl text-xs transition">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> পেছনে
+                            </button>
+                            <button onclick="goToStep3()" class="w-2/3 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-extrabold rounded-2xl text-xs transition shadow-lg shadow-brand-500/20">
+                                ডিপোজিট নিয়মাবলী <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: DEPOSIT INSTRUCTIONS & PROOF SUBMISSION -->
+                    <div id="wizardStep3" class="hidden space-y-6">
+                        <div class="bg-slate-900/90 p-5 rounded-2xl border border-slate-800/80 space-y-3 text-xs leading-relaxed text-slate-300">
+                            <div class="flex items-center space-x-2 text-cyan-400 font-bold border-b border-slate-800 pb-2.5 text-sm">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span id="depositInstructionTitle">US Receiving Account Details (InSave Deposit Info)</span>
+                            </div>
+                            
+                            <div id="depositInstructionBody" class="font-mono bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-slate-200 space-y-1.5 whitespace-pre-line select-all text-[11px] leading-relaxed">
+                                <!-- Dynamic Deposit Info Populated via JS -->
+                            </div>
+
+                            <p class="text-amber-300/90 text-[11px]">
+                                📌 <b>নির্দেশনা:</b> উপরে প্রদত্ত একাউন্টে কাঙ্ক্ষিত পরিমাণ ডলার/টাকা পাঠাও এবং ট্রানজেকশন আইডি (TxID) কপি করে নিচের ঘরে বসাও।
+                            </p>
+                        </div>
+
+                        <!-- TxID Input -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ট্রানজেকশন আইডি (Transaction ID / TxID)</label>
+                            <input type="text" id="txidInput" placeholder="যেমন: 9J4821039XX বা TRX12345" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm font-semibold text-white focus:outline-none focus:border-brand-500 transition">
+                        </div>
+
+                        <!-- Screenshot Attachment Picker -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">পেমেন্ট কনফার্মেশনের স্ক্রিনশট আপলোড করুন (ঐচ্ছিক)</label>
+                            <div class="border-2 border-dashed border-slate-700/80 rounded-2xl p-4 text-center bg-slate-900/40 hover:border-brand-500 transition cursor-pointer" onclick="document.getElementById('proofFileInput').click()">
+                                <input type="file" id="proofFileInput" accept="image/*" class="hidden" onchange="previewProofImage(this)">
+                                <div id="fileUploadPrompt" class="space-y-1.5">
+                                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400"></i>
+                                    <p class="text-xs font-semibold text-slate-300">ইমেজ সিলেক্ট করতে এখানে ট্যাপ করুন</p>
+                                </div>
+                                <div id="filePreviewContainer" class="hidden">
+                                    <img id="proofImgPreview" src="" class="max-h-32 mx-auto rounded-xl border border-slate-700 shadow-sm">
+                                    <p class="text-[10px] text-emerald-400 mt-2 font-bold">ইমেজ সিলেক্ট হয়েছে</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 Buttons -->
+                        <div class="flex space-x-3">
+                            <button onclick="goToStep2()" class="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl text-xs transition">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> পেছনে
+                            </button>
+                            <button onclick="submitOrder()" class="w-2/3 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-2xl text-xs transition shadow-lg shadow-emerald-500/20">
+                                অর্ডার কনফার্ম করুন <i class="fa-solid fa-check-circle ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PUBLIC MODALS ================= -->
+
+        <!-- Live Rates Modal -->
+        <div id="ratesModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
+                <div class="flex justify-between items-center border-b border-slate-800/80 pb-3.5">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-line text-cyan-400"></i>
+                        <span>বর্তমান এক্সচেঞ্জ রেট তালিকা</span>
+                    </h3>
+                    <button onclick="closeModal('ratesModal')" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div class="space-y-2.5 text-xs" id="modalRatesList"></div>
+            </div>
+        </div>
+
+        <!-- Order History Modal -->
+        <div id="historyModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel border border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[85vh] flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-800/80 pb-3.5">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
+                        <span>আপনার সাম্প্রতিক অর্ডারগুলো</span>
+                    </h3>
+                    <button onclick="closeModal('historyModal')" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div class="overflow-y-auto space-y-3 flex-grow pr-1" id="userHistoryList"></div>
+            </div>
+        </div>
+
+        <!-- Support Modal -->
+        <div id="supportModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+                <div class="flex justify-between items-center border-b border-slate-800/80 pb-3.5">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-headset text-emerald-400"></i>
+                        <span>হেল্প ডেক্স ও সাপোর্ট</span>
+                    </h3>
+                    <button onclick="closeModal('supportModal')" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <p class="text-slate-300">যেকোনো প্রয়োজন বা সহযোগিতার জন্য আমাদের সাথে সরাসরি যোগাযোগ করুন:</p>
+                    <a href="https://wa.me/8801953192653" target="_blank" class="flex items-center space-x-3.5 p-3.5 bg-emerald-950/30 border border-emerald-800/50 rounded-2xl hover:border-emerald-500 transition">
+                        <i class="fa-brands fa-whatsapp text-2xl text-emerald-400"></i>
+                        <div>
+                            <span class="font-bold text-white block">WhatsApp লাইভ চ্যাট</span>
+                            <span class="text-slate-400">+880 1953-192653</span>
+                        </div>
+                    </a>
+                    <a href="https://t.me/fastex_support" target="_blank" class="flex items-center space-x-3.5 p-3.5 bg-sky-950/30 border border-sky-800/50 rounded-2xl hover:border-sky-500 transition">
+                        <i class="fa-brands fa-telegram text-2xl text-sky-400"></i>
+                        <div>
+                            <span class="font-bold text-white block">Telegram চ্যানেল</span>
+                            <span class="text-slate-400">@FastEx_Support</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECRET ADMIN CONTROL PANEL VIEW ================= -->
+        <div id="adminView" class="hidden space-y-8">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 shadow-2xl space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg text-[10px] font-black uppercase tracking-wider">Admin Master Console</span>
+                            <span class="text-xs text-slate-400">লাইভ সিস্টেম কনফিগারেশন</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-white mt-1">কন্ট্রোল ও অর্ডার ম্যানেজমেন্ট ড্যাশবোর্ড</h2>
+                    </div>
+                    <button onclick="switchView('user')" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 flex items-center space-x-2 transition self-start sm:self-auto">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>ইউজার ইন্টারফেস ভিজিট করুন</span>
+                    </button>
+                </div>
+
+                <!-- Admin Quick Stats -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block font-medium">মোট অর্ডার</span>
+                        <span id="statTotalOrders" class="text-2xl font-black text-white mt-1 block">0</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block font-medium">পেন্ডিং অর্ডার</span>
+                        <span id="statPendingOrders" class="text-2xl font-black text-amber-400 mt-1 block">0</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block font-medium">কমপ্লিট অর্ডার</span>
+                        <span id="statCompletedOrders" class="text-2xl font-black text-emerald-400 mt-1 block">0</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block font-medium">মোট ভলিউম ($)</span>
+                        <span id="statTotalVolume" class="text-2xl font-black text-cyan-400 mt-1 block">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Controls -->
+            <div class="space-y-6">
+                <!-- TELEGRAM BOT NOTIFICATION SETTINGS CARD -->
+                <div class="glass-panel border border-sky-500/30 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                        <h3 class="text-base font-bold text-white flex items-center space-x-2.5">
+                            <i class="fa-brands fa-telegram text-sky-400 text-xl"></i>
+                            <span>ইনস্ট্যান্ট অর্ডার নোটিফিকেশন সেটআপ (Telegram Bot)</span>
+                        </h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="telegramNotifyToggle" class="sr-only peer" onchange="toggleTelegramNotify()">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold uppercase tracking-wider">Telegram Bot Token</label>
+                            <input type="text" id="adminTgToken" value="8925822162:AAGD562eypIZc76a0ix-K2jHLuJr58YVHR8" placeholder="আপনার বট টোকেন" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-white font-mono focus:border-sky-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold uppercase tracking-wider">Telegram Chat ID</label>
+                            <input type="text" id="adminTgChatId" value="8434665762" placeholder="যেমন: 8434665762" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3 text-white font-mono focus:border-sky-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                        <p class="text-[11px] text-slate-400">
+                            💡 যেকোনো কাস্টমার অর্ডার করা মাত্রই আপনার টেলিগ্রাম আইডি (<b>8434665762</b>)-তে ইনস্ট্যান্ট নোটিফিকেশন যাবে।
+                        </p>
+                        <button onclick="testTelegramNotification()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-sky-500/20">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> টেস্ট মেসেজ পাঠান
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service Toggles Card -->
+                <div class="glass-panel border border-slate-800/80 rounded-3xl p-6 sm:p-8 space-y-5">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2.5 border-b border-slate-800/80 pb-4">
+                        <i class="fa-solid fa-toggle-on text-emerald-400"></i>
+                        <span>১-ক্লিকে সার্ভিস অন/অফ (Toggles)</span>
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs" id="serviceToggleGrid"></div>
+                </div>
+
+                <!-- Rate & Notice Editor Card -->
+                <div class="glass-panel border border-slate-800/80 rounded-3xl p-6 sm:p-8 space-y-5">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2.5 border-b border-slate-800/80 pb-4">
+                        <i class="fa-solid fa-pen-to-square text-cyan-400"></i>
+                        <span>রেট ও নোটিশ এডিটর</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold">PayPal Rate (BDT)</label>
+                            <input type="number" id="adminRate_paypal" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold">Upwork Rate (BDT)</label>
+                            <input type="number" id="adminRate_upwork" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold">Fiverr Rate (BDT)</label>
+                            <input type="number" id="adminRate_fiverr" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold">USDT Buy Rate (BDT)</label>
+                            <input type="number" id="adminRate_usdt_buy" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold">USDT Sell Rate (BDT)</label>
+                            <input type="number" id="adminRate_usdt_sell" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1.5 font-bold">ব্রডকাস্ট নোটিশ টেক্সট</label>
+                            <input type="text" id="adminBroadcastInput" class="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-white">
+                        </div>
+                    </div>
+                    <button onclick="saveAdminSettings()" class="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-black rounded-xl text-xs transition shadow-lg shadow-brand-500/20">
+                        সেটিংস সেভ করুন
+                    </button>
+                </div>
+
+                <!-- Orders Table Card -->
+                <div class="glass-panel border border-slate-800/80 rounded-3xl p-6 sm:p-8 space-y-5">
+                    <h3 class="text-base font-bold text-white flex items-center space-x-2.5 border-b border-slate-800/80 pb-4">
+                        <i class="fa-solid fa-list-check text-amber-400"></i>
+                        <span>গ্রাহকদের সাম্প্রতিক অর্ডারসমূহ</span>
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-800">
+                                    <th class="py-3 px-3">Order ID</th>
+                                    <th class="py-3 px-3">সার্ভিস</th>
+                                    <th class="py-3 px-3">পরিমাণ</th>
+                                    <th class="py-3 px-3">গ্রাহকের পেমেন্ট নম্বর</th>
+                                    <th class="py-3 px-3">TxID</th>
+                                    <th class="py-3 px-3">স্ট্যাটাস</th>
+                                    <th class="py-3 px-3">অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminOrdersTableBody" class="divide-y divide-slate-800/60 text-slate-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECRET AUTHENTICATION MODAL ================= -->
+        <div id="adminAuthModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl relative">
+                <div class="text-center space-y-2">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-white">অ্যাডমিন পাসকোড দিন</h3>
+                    <p class="text-xs text-slate-400">ড্যাশবোর্ডে প্রবেশ করতে আপনার পিন কোড লিখুন</p>
+                </div>
+
+                <div>
+                    <input type="password" id="adminPasscodeInput" placeholder="পাসকোড লিখুন..." class="w-full bg-slate-950 border border-slate-700/80 rounded-2xl px-4 py-3 text-center text-xl font-bold text-white tracking-widest focus:outline-none focus:border-amber-500 transition" onkeyup="if(event.key==='Enter') verifyAdminPasscode()">
+                    <p id="adminAuthError" class="hidden text-[11px] text-rose-400 text-center mt-2 font-semibold">ভুল পাসকোড! আবার চেষ্টা করুন।</p>
+                </div>
+
+                <div class="flex space-x-2">
+                    <button onclick="closeModal('adminAuthModal')" class="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
+                        বাতিল
+                    </button>
+                    <button onclick="verifyAdminPasscode()" class="w-2/3 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition shadow-lg shadow-amber-500/20">
+                        আনলক করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950/90 border-t border-slate-900 py-8 text-center text-xs text-slate-500 relative z-10">
+        <p>© 2026 FastEx Exchange. All rights reserved. Instant & Secure Automated Currency Solutions.</p>
+    </footer>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        const DEFAULT_CONFIG = {
+            rates: {
+                paypal: 114.0,
+                upwork: 115.0,
+                fiverr: 115.0,
+                usdt_buy: 124.0,
+                usdt_sell: 121.0
+            },
+            status: {
+                paypal: true,
+                upwork: true,
+                fiverr: true,
+                usdt: true,
+                bkash: true,
+                nagad: true,
+                rocket: true,
+                bank: true
+            },
+            limits: {
+                minUsd: 2.0,
+                maxUsd: 1000.0
+            },
+            broadcast: "📢 স্বাগতম FastEx এক্সচেঞ্জ প্ল্যাটফর্মে! নিরাপদে ও দ্রুততম সময়ে ফ্রিল্যান্স USD এবং ক্রিপ্টো ক্যাশআউট করুন।",
+            telegram: {
+                enabled: true,
+                botToken: "8925822162:AAGD562eypIZc76a0ix-K2jHLuJr58YVHR8",
+                chatId: "8434665762"
+            }
+        };
+
+        let savedConfig = JSON.parse(localStorage.getItem('fastex_config')) || {};
+        let appConfig = Object.assign({}, DEFAULT_CONFIG, savedConfig);
+        
+        // Ensure default bot Token & Chat ID are present
+        if (!appConfig.telegram || !appConfig.telegram.botToken) {
+            appConfig.telegram = DEFAULT_CONFIG.telegram;
+        }
+
+        let orderHistory = JSON.parse(localStorage.getItem('fastex_orders')) || [];
+
+        let currentCategory = 'freelance';
+        let currentPair = 'paypal_bdt';
+        let currentPayoutMethod = 'bkash';
+        let proofImageBase64 = '';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTicker();
+            populatePairOptions();
+            onPairChange();
+            renderAdminView();
+            initSecretTrigger();
+            selectPayoutMethod('bkash');
+        });
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-950/90 border-emerald-500 text-emerald-200' :
+                            type === 'error' ? 'bg-rose-950/90 border-rose-500 text-rose-200' :
+                            'bg-slate-900/90 border-slate-700 text-slate-200';
+            
+            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl border shadow-2xl text-xs font-semibold flex items-center space-x-2.5 transition duration-300 transform translate-y-2 backdrop-blur-md ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check text-emerald-400' : type === 'error' ? 'fa-circle-xmark text-rose-400' : 'fa-circle-info text-cyan-400'} text-base"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function setServiceCategory(cat) {
+            currentCategory = cat;
+            const btnFreelance = document.getElementById('catBtnFreelance');
+            const btnCrypto = document.getElementById('catBtnCrypto');
+
+            if (cat === 'freelance') {
+                btnFreelance.className = 'py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-500/20';
+                btnCrypto.className = 'py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white';
+            } else {
+                btnCrypto.className = 'py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-500/20';
+                btnFreelance.className = 'py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white';
+            }
+            populatePairOptions();
+            onPairChange();
+        }
+
+        function populatePairOptions() {
+            const pairSelect = document.getElementById('pairSelect');
+            pairSelect.innerHTML = '';
+
+            if (currentCategory === 'freelance') {
+                pairSelect.innerHTML = `
+                    <option value="paypal_bdt">PayPal USD ➔ BDT Cash (Rate: ${appConfig.rates.paypal} BDT)</option>
+                    <option value="upwork_bdt">Upwork USD ➔ BDT Cash (Rate: ${appConfig.rates.upwork} BDT)</option>
+                    <option value="fiverr_bdt">Fiverr USD ➔ BDT Cash (Rate: ${appConfig.rates.fiverr} BDT)</option>
+                `;
+            } else {
+                pairSelect.innerHTML = `
+                    <option value="usdt_buy">Binance USDT ➔ BDT Cash (Rate: ${appConfig.rates.usdt_buy} BDT)</option>
+                    <option value="usdt_sell">BDT Cash ➔ Binance USDT (Rate: ${appConfig.rates.usdt_sell} BDT)</option>
+                `;
+            }
+        }
+
+        function onPairChange() {
+            currentPair = document.getElementById('pairSelect').value;
+            const noticeBox = document.getElementById('pairDisabledNotice');
+            const btnNext = document.getElementById('btnStep1Next');
+            
+            let isEnabled = true;
+            if (currentPair.startsWith('paypal') && !appConfig.status.paypal) isEnabled = false;
+            if (currentPair.startsWith('upwork') && !appConfig.status.upwork) isEnabled = false;
+            if (currentPair.startsWith('fiverr') && !appConfig.status.fiverr) isEnabled = false;
+            if (currentPair.startsWith('usdt') && !appConfig.status.usdt) isEnabled = false;
+
+            if (!isEnabled) {
+                noticeBox.classList.remove('hidden');
+                btnNext.disabled = true;
+                btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                noticeBox.classList.add('hidden');
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            calculateExchange();
+        }
+
+        function calculateExchange() {
+            const sendInput = parseFloat(document.getElementById('sendAmount').value) || 0;
+            const recvInput = document.getElementById('recvAmount');
+            const rateLabel = document.getElementById('rateLabel');
+            const limitLabel = document.getElementById('limitLabel');
+            const errBox = document.getElementById('calcErrorMsg');
+
+            let rate = appConfig.rates.paypal;
+            if (currentPair === 'upwork_bdt') rate = appConfig.rates.upwork;
+            if (currentPair === 'fiverr_bdt') rate = appConfig.rates.fiverr;
+            if (currentPair === 'usdt_buy') rate = appConfig.rates.usdt_buy;
+            if (currentPair === 'usdt_sell') rate = appConfig.rates.usdt_sell;
+
+            rateLabel.innerText = `1 USD = ${rate} BDT`;
+            limitLabel.innerText = `$${appConfig.limits.minUsd} - $${appConfig.limits.maxUsd}`;
+
+            let totalRecv = sendInput * rate;
+            recvInput.value = totalRecv > 0 ? totalRecv.toFixed(2) : "0.00";
+
+            if (sendInput > 0 && (sendInput < appConfig.limits.minUsd || sendInput > appConfig.limits.maxUsd)) {
+                errBox.innerText = `অর্ডার দেওয়ার জন্য নূন্যতম $${appConfig.limits.minUsd} এবং সর্বোচ্চ $${appConfig.limits.maxUsd} প্রযোজ্য।`;
+                errBox.classList.remove('hidden');
+            } else {
+                errBox.classList.add('hidden');
+            }
+        }
+
+        function goToStep1() {
+            document.getElementById('wizardStep1').classList.remove('hidden');
+            document.getElementById('wizardStep2').classList.add('hidden');
+            document.getElementById('wizardStep3').classList.add('hidden');
+            updateStepIndicators(1);
+        }
+
+        function goToStep2() {
+            const sendAmt = parseFloat(document.getElementById('sendAmount').value) || 0;
+            if (sendAmt < appConfig.limits.minUsd || sendAmt > appConfig.limits.maxUsd) {
+                showToast(`দয়া করে সঠিক পরিমাণ লিখুন ($${appConfig.limits.minUsd} - $${appConfig.limits.maxUsd})`, 'error');
+                return;
+            }
+
+            document.getElementById('summaryService').innerText = document.getElementById('pairSelect').options[document.getElementById('pairSelect').selectedIndex].text.split('(')[0];
+            document.getElementById('summarySend').innerText = `${sendAmt} USD`;
+            document.getElementById('summaryRecv').innerText = `${document.getElementById('recvAmount').value} BDT`;
+
+            document.getElementById('wizardStep1').classList.add('hidden');
+            document.getElementById('wizardStep2').classList.remove('hidden');
+            document.getElementById('wizardStep3').classList.add('hidden');
+            updateStepIndicators(2);
+        }
+
+        function goToStep3() {
+            const accNum = document.getElementById('payoutAccountInput').value.trim();
+            if (!accNum) {
+                showToast('দয়া করে পেমেন্ট গ্রহণের একাউন্ট নম্বরটি দিন', 'error');
+                return;
+            }
+
+            renderDepositInstructions();
+
+            document.getElementById('wizardStep1').classList.add('hidden');
+            document.getElementById('wizardStep2').classList.add('hidden');
+            document.getElementById('wizardStep3').classList.remove('hidden');
+            updateStepIndicators(3);
+        }
+
+        function updateStepIndicators(step) {
+            const s1 = document.getElementById('stepInd1');
+            const s2 = document.getElementById('stepInd2');
+            const s3 = document.getElementById('stepInd3');
+
+            s1.className = step >= 1 ? 'flex items-center space-x-2 text-brand-400 font-bold' : 'flex items-center space-x-2 text-slate-500';
+            s2.className = step >= 2 ? 'flex items-center space-x-2 text-brand-400 font-bold' : 'flex items-center space-x-2 text-slate-500';
+            s3.className = step >= 3 ? 'flex items-center space-x-2 text-brand-400 font-bold' : 'flex items-center space-x-2 text-slate-500';
+        }
+
+        function selectPayoutMethod(method) {
+            currentPayoutMethod = method;
+            const buttons = document.querySelectorAll('.payout-opt');
+            buttons.forEach(btn => {
+                btn.classList.remove('border-brand-500', 'bg-brand-500/10');
+                btn.classList.add('border-slate-700/80', 'bg-slate-900/80');
+                const ind = btn.querySelector('.indicator');
+                if (ind) ind.classList.remove('bg-brand-500', 'border-brand-400');
+            });
+
+            const activeBtn = document.getElementById(`payoutBtn_${method}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-slate-700/80', 'bg-slate-900/80');
+                activeBtn.classList.add('border-brand-500', 'bg-brand-500/10');
+                const ind = activeBtn.querySelector('.indicator');
+                if (ind) ind.classList.add('bg-brand-500', 'border-brand-400');
+            }
+        }
+
+        function renderDepositInstructions() {
+            const titleEl = document.getElementById('depositInstructionTitle');
+            const bodyEl = document.getElementById('depositInstructionBody');
+
+            if (currentCategory === 'freelance') {
+                titleEl.innerText = "US Receiving Account Details (InSave Deposit Info)";
+                bodyEl.innerText = `Bank Name: Community Federal Savings Bank\nAccount Number: 38291048291\nRouting Number: 026073150\nAccount Type: Checking\nBeneficiary Name: FastEx Global Ltd`;
+            } else {
+                titleEl.innerText = "Binance USDT Pay ID / Wallet Address";
+                bodyEl.innerText = `Binance Pay ID: 893201942\nUSDT TRC20 Address: T9xPzK2mL3vR8qW1nJ4sY6tU7vE5wZ9aQ\nNetwork: Tron (TRC20)`;
+            }
+        }
+
+        function previewProofImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    proofImageBase64 = e.result;
+                    document.getElementById('proofImgPreview').src = proofImageBase64;
+                    document.getElementById('fileUploadPrompt').classList.add('hidden');
+                    document.getElementById('filePreviewContainer').classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // SUBMIT ORDER WITH TELEGRAM NOTIFICATION TRIGGER
+        function submitOrder() {
+            const txid = document.getElementById('txidInput').value.trim();
+            if (!txid) {
+                showToast('দয়া করে আপনার ট্রানজেকশন আইডি (TxID) লিখুন', 'error');
+                return;
+            }
+
+            const newOrder = {
+                id: 'FX-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleString('bn-BD'),
+                service: document.getElementById('summaryService').innerText,
+                sendAmt: document.getElementById('summarySend').innerText,
+                recvAmt: document.getElementById('summaryRecv').innerText,
+                payoutMethod: currentPayoutMethod,
+                payoutAccount: document.getElementById('payoutAccountInput').value.trim(),
+                txid: txid,
+                proofImg: proofImageBase64,
+                status: 'Pending'
+            };
+
+            orderHistory.unshift(newOrder);
+            localStorage.setItem('fastex_orders', JSON.stringify(orderHistory));
+
+            // Send Telegram Instant Alert to Admin
+            sendTelegramOrderAlert(newOrder);
+
+            showToast('অর্ডারটি সফলভাবে জমা হয়েছে! অ্যাডমিন পর্যালোচনা করার পর পে-আউট দেওয়া হবে।', 'success');
+            
+            document.getElementById('sendAmount').value = '';
+            document.getElementById('txidInput').value = '';
+            document.getElementById('payoutAccountInput').value = '';
+            goToStep1();
+            renderUserHistory();
+            renderAdminOrders();
+        }
+
+        // Send Instant Telegram Notification
+        function sendTelegramOrderAlert(order) {
+            if (!appConfig.telegram || !appConfig.telegram.enabled || !appConfig.telegram.botToken || !appConfig.telegram.chatId) {
+                return;
+            }
+
+            const message = `🚨 *নতুন অর্ডার এসেছে!* (Order ID: #${order.id})
+━━━━━━━━━━━━━━━━━━━━
+👤 *সার্ভিস:* ${order.service}
+💵 *পাঠানো হবে:* ${order.sendAmt}
+💰 *পাবে:* ${order.recvAmt}
+🏦 *পেমেন্ট মেথড:* ${order.payoutMethod.toUpperCase()}
+📱 *একাউন্ট নম্বর:* \`${order.payoutAccount}\`
+🧾 *TxID:* \`${order.txid}\`
+⏰ *সময়:* ${order.date}
+━━━━━━━━━━━━━━━━━━━━
+*FastEx Admin Alert System*`;
+
+            const url = `https://api.telegram.org/bot${appConfig.telegram.botToken}/sendMessage`;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: appConfig.telegram.chatId,
+                    text: message,
+                    parse_mode: 'Markdown'
+                })
+            }).catch(err => console.error("Telegram notify failed:", err));
+        }
+
+        // ================= SECRET GESTURE & AUTHENTICATION =================
+        let logoTapCount = 0;
+        let logoTapTimer = null;
+
+        function initSecretTrigger() {
+            const logo = document.getElementById('secretLogoTrigger');
+            
+            // Secret Trigger 1: 5 rapid taps on logo within 3 seconds
+            logo.addEventListener('click', () => {
+                logoTapCount++;
+                clearTimeout(logoTapTimer);
+                
+                if (logoTapCount >= 5) {
+                    logoTapCount = 0;
+                    openModal('adminAuthModal');
+                } else {
+                    logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 3000);
+                }
+            });
+
+            // Secret Trigger 2: Keyboard Shortcut (Ctrl + Shift + A)
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+                    e.preventDefault();
+                    openModal('adminAuthModal');
+                }
+            });
+        }
+
+        // Verify secret passcode (Base64 encoded string 'MTk1MzI2' = '195326')
+        function verifyAdminPasscode() {
+            const input = document.getElementById('adminPasscodeInput').value.trim();
+            const err = document.getElementById('adminAuthError');
+            
+            const secretPass = atob('MTk1MzI2'); // Base64 decode 'MTk1MzI2' -> '195326'
+
+            if (input === secretPass) {
+                err.classList.add('hidden');
+                document.getElementById('adminPasscodeInput').value = '';
+                closeModal('adminAuthModal');
+                showToast('অ্যাডমিন এক্সেস অনুমোদিত!', 'success');
+                switchView('admin');
+            } else {
+                err.classList.remove('hidden');
+            }
+        }
+
+        function switchView(view) {
+            const userView = document.getElementById('userView');
+            const adminView = document.getElementById('adminView');
+            const adminExitBtn = document.getElementById('adminExitBtn');
+
+            if (view === 'admin') {
+                userView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminExitBtn.classList.remove('hidden');
+                renderAdminView();
+            } else {
+                adminView.classList.add('hidden');
+                userView.classList.remove('hidden');
+                adminExitBtn.classList.add('hidden');
+            }
+        }
+
+        function renderAdminView() {
+            document.getElementById('statTotalOrders').innerText = orderHistory.length;
+            document.getElementById('statPendingOrders').innerText = orderHistory.filter(o => o.status === 'Pending').length;
+            document.getElementById('statCompletedOrders').innerText = orderHistory.filter(o => o.status === 'Completed').length;
+            
+            const toggleGrid = document.getElementById('serviceToggleGrid');
+            toggleGrid.innerHTML = `
+                <div class="p-3 bg-slate-950/80 rounded-xl flex items-center justify-between border border-slate-800">
+                    <span class="font-bold">PayPal</span>
+                    <button onclick="toggleService('paypal')" class="px-2.5 py-1 rounded text-[10px] font-extrabold ${appConfig.status.paypal ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">${appConfig.status.paypal ? 'ACTIVE' : 'OFF'}</button>
+                </div>
+                <div class="p-3 bg-slate-950/80 rounded-xl flex items-center justify-between border border-slate-800">
+                    <span class="font-bold">Upwork</span>
+                    <button onclick="toggleService('upwork')" class="px-2.5 py-1 rounded text-[10px] font-extrabold ${appConfig.status.upwork ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">${appConfig.status.upwork ? 'ACTIVE' : 'OFF'}</button>
+                </div>
+                <div class="p-3 bg-slate-950/80 rounded-xl flex items-center justify-between border border-slate-800">
+                    <span class="font-bold">Fiverr</span>
+                    <button onclick="toggleService('fiverr')" class="px-2.5 py-1 rounded text-[10px] font-extrabold ${appConfig.status.fiverr ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">${appConfig.status.fiverr ? 'ACTIVE' : 'OFF'}</button>
+                </div>
+                <div class="p-3 bg-slate-950/80 rounded-xl flex items-center justify-between border border-slate-800">
+                    <span class="font-bold">Binance USDT</span>
+                    <button onclick="toggleService('usdt')" class="px-2.5 py-1 rounded text-[10px] font-extrabold ${appConfig.status.usdt ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}">${appConfig.status.usdt ? 'ACTIVE' : 'OFF'}</button>
+                </div>
+            `;
+
+            document.getElementById('adminRate_paypal').value = appConfig.rates.paypal;
+            document.getElementById('adminRate_upwork').value = appConfig.rates.upwork;
+            document.getElementById('adminRate_fiverr').value = appConfig.rates.fiverr;
+            document.getElementById('adminRate_usdt_buy').value = appConfig.rates.usdt_buy;
+            document.getElementById('adminRate_usdt_sell').value = appConfig.rates.usdt_sell;
+            document.getElementById('adminBroadcastInput').value = appConfig.broadcast;
+
+            // Telegram inputs
+            if (!appConfig.telegram) appConfig.telegram = { enabled: true, botToken: "8925822162:AAGD562eypIZc76a0ix-K2jHLuJr58YVHR8", chatId: "8434665762" };
+            document.getElementById('telegramNotifyToggle').checked = appConfig.telegram.enabled;
+            document.getElementById('adminTgToken').value = appConfig.telegram.botToken || "8925822162:AAGD562eypIZc76a0ix-K2jHLuJr58YVHR8";
+            document.getElementById('adminTgChatId').value = appConfig.telegram.chatId || "8434665762";
+
+            renderAdminOrders();
+        }
+
+        function toggleService(key) {
+            appConfig.status[key] = !appConfig.status[key];
+            localStorage.setItem('fastex_config', JSON.stringify(appConfig));
+            renderAdminView();
+            onPairChange();
+            showToast(`${key.toUpperCase()} স্ট্যাটাস পরিবর্তিত হয়েছে`, 'info');
+        }
+
+        function toggleTelegramNotify() {
+            if (!appConfig.telegram) appConfig.telegram = { enabled: true, botToken: "8925822162:AAGD562eypIZc76a0ix-K2jHLuJr58YVHR8", chatId: "8434665762" };
+            appConfig.telegram.enabled = document.getElementById('telegramNotifyToggle').checked;
+            localStorage.setItem('fastex_config', JSON.stringify(appConfig));
+            showToast(`টেলিগ্রাম নোটিফিকেশন ${appConfig.telegram.enabled ? 'অন' : 'অফ'} করা হয়েছে`, 'info');
+        }
+
+        function saveAdminSettings() {
+            appConfig.rates.paypal = parseFloat(document.getElementById('adminRate_paypal').value) || 114;
+            appConfig.rates.upwork = parseFloat(document.getElementById('adminRate_upwork').value) || 115;
+            appConfig.rates.fiverr = parseFloat(document.getElementById('adminRate_fiverr').value) || 115;
+            appConfig.rates.usdt_buy = parseFloat(document.getElementById('adminRate_usdt_buy').value) || 124;
+            appConfig.rates.usdt_sell = parseFloat(document.getElementById('adminRate_usdt_sell').value) || 121;
+            appConfig.broadcast = document.getElementById('adminBroadcastInput').value.trim();
+
+            if (!appConfig.telegram) appConfig.telegram = {};
+            appConfig.telegram.botToken = document.getElementById('adminTgToken').value.trim();
+            appConfig.telegram.chatId = document.getElementById('adminTgChatId').value.trim() || "8434665762";
+            appConfig.telegram.enabled = document.getElementById('telegramNotifyToggle').checked;
+
+            localStorage.setItem('fastex_config', JSON.stringify(appConfig));
+            document.getElementById('broadcastText').innerText = appConfig.broadcast;
+            renderTicker();
+            populatePairOptions();
+            showToast('অ্যাডমিন সেটিংস ও টেলিগ্রাম বট কনফিগারেশন সেভ হয়েছে', 'success');
+        }
+
+        function testTelegramNotification() {
+            const token = document.getElementById('adminTgToken').value.trim();
+            const chatId = document.getElementById('adminTgChatId').value.trim() || "8434665762";
+
+            if (!token) {
+                showToast('দয়া করে বট টোকেন বক্সে টোকেন বসান', 'error');
+                return;
+            }
+
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: '✅ FastEx Exchange: আপনার টেলিগ্রাম বট সফলভাবে যুক্ত হয়েছে! এখন থেকে নতুন অর্ডার আসলেই এখানে ইনস্ট্যান্ট মেসেজ পাবেন।',
+                    parse_mode: 'Markdown'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) {
+                    showToast('টেস্ট মেসেজ সফলভাবে আপনার টেলিগ্রামে পাঠানো হয়েছে!', 'success');
+                } else {
+                    showToast('টেলিগ্রাম এপিআই ত্রুটি! নিশ্চিত করুন যে আপনি টেলিগ্রামে আপনার তৈরি করা নতুন বটের সাথে চ্যাট স্টার্ট (/start) করেছেন।', 'error');
+                }
+            })
+            .catch(() => showToast('কানেকশনে সমস্যা হয়েছে!', 'error'));
+        }
+
+        function renderAdminOrders() {
+            const tbody = document.getElementById('adminOrdersTableBody');
+            tbody.innerHTML = '';
+
+            if (orderHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-slate-500">কোনো সাম্প্রতিক অর্ডার নেই</td></tr>`;
+                return;
+            }
+
+            orderHistory.forEach((ord, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-mono font-bold text-emerald-400">${ord.id}</td>
+                    <td class="py-3 px-3">${ord.service}</td>
+                    <td class="py-3 px-3 font-bold">${ord.sendAmt} ➔ ${ord.recvAmt}</td>
+                    <td class="py-3 px-3 font-mono">${ord.payoutAccount} (${ord.payoutMethod})</td>
+                    <td class="py-3 px-3 font-mono text-slate-400">${ord.txid}</td>
+                    <td class="py-3 px-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ord.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400' : ord.status === 'Rejected' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}">${ord.status}</span>
+                    </td>
+                    <td class="py-3 px-3 space-x-1">
+                        <button onclick="updateOrderStatus(${index}, 'Completed')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold"><i class="fa-solid fa-check"></i></button>
+                        <button onclick="updateOrderStatus(${index}, 'Rejected')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[10px] font-bold"><i class="fa-solid fa-xmark"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateOrderStatus(index, newStatus) {
+            orderHistory[index].status = newStatus;
+            localStorage.setItem('fastex_orders', JSON.stringify(orderHistory));
+            renderAdminOrders();
+            renderAdminView();
+            showToast(`অর্ডার #${orderHistory[index].id} ${newStatus} করা হয়েছে`, 'success');
+        }
+
+        function renderTicker() {
+            const container = document.getElementById('tickerContainer');
+            container.innerHTML = `
+                <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>PayPal USD: <b class="text-white">${appConfig.rates.paypal} BDT</b></span></div>
+                <span class="text-slate-700">•</span>
+                <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span><span>Upwork USD: <b class="text-white">${appConfig.rates.upwork} BDT</b></span></div>
+                <span class="text-slate-700">•</span>
+                <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span><span>Fiverr USD: <b class="text-white">${appConfig.rates.fiverr} BDT</b></span></div>
+                <span class="text-slate-700">•</span>
+                <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span><span>USDT Buy: <b class="text-white">${appConfig.rates.usdt_buy} BDT</b></span></div>
+            `;
+        }
+
+        function renderUserHistory() {
+            const container = document.getElementById('userHistoryList');
+            container.innerHTML = '';
+
+            if (orderHistory.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">আপনি এখনো কোনো অর্ডার করেননি।</p>`;
+                return;
+            }
+
+            orderHistory.forEach(ord => {
+                const item = document.createElement('div');
+                item.className = 'p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-xs';
+                item.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                        <span class="font-mono font-bold text-emerald-400">${ord.id}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ord.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${ord.status}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-300 font-medium">
+                        <span>সার্ভিস: ${ord.service}</span>
+                        <span class="font-bold text-emerald-400">${ord.sendAmt} ➔ ${ord.recvAmt}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400">
+                        <span>পেমেন্ট একাউন্ট: ${ord.payoutAccount} (${ord.payoutMethod})</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'historyModal') renderUserHistory();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function dismissBroadcast() {
+            document.getElementById('broadcastBanner').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
